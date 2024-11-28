@@ -7,7 +7,7 @@ pipeline {
         stage('Build in Docker') {
             steps {
                 script {
-                    docker.image('abhishekf5/maven-abhishek-docker-agent:v1').inside('--user root --privileged -v /var/run/docker.sock:/var/run/docker.sock') 
+                    docker.image('abhishekf5/maven-abhishek-docker-agent:v1').inside('--privileged --user root -v /var/run/docker.sock:/var/run/docker.sock') 
                         { sh 'docker --version' 
                           sh 'docker ps'
             }
