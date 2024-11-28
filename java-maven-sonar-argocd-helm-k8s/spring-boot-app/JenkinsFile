@@ -1,16 +1,22 @@
 pipeline {
     agent {
-        docker-node {
-            image 'abhishekf5/maven-abhishek-docker-agent:v1'
-            args '--user root -v /var/run/docker.sock:/var/run/docker.sock'  // Mount Docker socket
-        }
+        label 'docker-node'  // This specifies that the pipeline will run on a node labeled 'docker-node'
     }
+    
     stages {
-        stage('Build') {
+        stage('Build in Docker') {
+            agent {
+                docker {
+                    image 'abhishekf5/maven-abhishek-docker-agent:v1'
+                    args '--user root -v /var/run/docker.sock:/var/run/docker.sock'  // Mount Docker socket
+                }
+            }
             steps {
                 script {
                     // Your build steps go here
-                    echo "Building inside the Docker container"
+                    echo "Running inside Docker container on the docker-node"
+                    // Example Maven build step (you can adjust it to your actual use case)
+                
                 }
             }
         }
