@@ -1,18 +1,14 @@
 pipeline {
-    agent none  // No global agent at the top level
-
+    agent {
+        label 'docker-node'  // This label should match the one configured for your Docker agent node
+    }
+    
     stages {
         stage('Build') {
-            agent {
-                docker {
-                    image 'abhishekf5/maven-abhishek-docker-agent:v1'
-                    args '--user root -v /var/run/docker.sock:/var/run/docker.sock'  // Mount Docker socket
-                }
-            }
             steps {
                 script {
                     // Your build steps go here
-                    echo "Building inside the Docker container"
+                    echo "Running on Docker agent node"
                 }
             }
         }
