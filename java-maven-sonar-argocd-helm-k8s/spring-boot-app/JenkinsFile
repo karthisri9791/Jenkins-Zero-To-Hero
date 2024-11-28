@@ -7,11 +7,10 @@ pipeline {
         stage('Build in Docker') {
             steps {
                 script {
-                    // Running Docker container in this stage
-                   docker.image('abhishekf5/maven-abhishek-docker-agent:v1').inside('--user root -v /var/run/docker.sock:/var/run/docker.sock') {
-                   
-                    // Inside this block, we are using the `sh` command to run Mav
-                    }
+                    docker.image('abhishekf5/maven-abhishek-docker-agent:v1').inside('--user root -v /var/run/docker.sock:/var/run/docker.sock') 
+                        { sh 'docker --version' 
+                          sh 'docker ps'
+            }
          stage(checkout)
                 steps {
                     sh 'echo passed'
