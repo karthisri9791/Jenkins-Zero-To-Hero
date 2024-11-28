@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'docker-node'  // This specifies that the pipeline will run on a node labeled 'docker-node'
+        label 'docker-node'  // This specifies that the pipeline runs on a node labeled 'docker-node'
     }
     
     stages {
@@ -13,10 +13,9 @@ pipeline {
             }
             steps {
                 script {
-                    // Your build steps go here
-                    echo "Running inside Docker container on the docker-node"
-                    // Example Maven build step (you can adjust it to your actual use case)
-                
+                    // Your build steps go here, running inside the Docker container
+                    echo "Building inside the Docker container"
+                    sh 'mvn clean install'  // Example build step, replace as needed
                 }
             }
         }
