@@ -1,32 +1,53 @@
 pipeline {
-  agent {
-    docker {
-      image 'abhishekf5/maven-abhishek-docker-agent:v1'
-      args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
+    agent {
+        docker {
+            image 'abhishekf5/maven-abhishek-docker-agent:v1'
+            args '--user root -v /var/run/docker.sock:/var/run/docker.sock' // mount Docker socket to access the host's Docker daemon
+        }
     }
-  }
-  stages {
-    stage('Checkout') {
-      steps {
-        sh 'echo passed'
-        //git branch: 'main', url: 'https://github.com/iam-veeramalla/Jenkins-Zero-To-Hero.git'
-      }
+    environment {
+        SONAR_URL = "http://localhost:9000"
     }
-    stage('Build and Test') {
-      steps {
-        sh 'ls -ltr'
-        // build the project and create a JAR file
-        sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
-      }
+    stages {
+        stage('Checkout') {
+            steps {
+                sh 'echo passed'
+                //git branch: 'main', url: 'https://github.com/iam-veeramalla/Jenkins-Zero-To-Hero.git'
+            }
+        }
+        stage('Build and Test') {
+            steps {
+                sh 'ls -ltr'
+                // build the project and create a JAR file
+                sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
+            }
+        }
+        stage('Print Environment Variables') { 
+            steps { 
+                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) { 
+                    script {
+                        echo "SonarQube URL: ${env.SONAR_URL}"
+                        if (env.SONAR_AUTH_TOKEN == null || env.SONAR_AUTH_TOKEN.trim() == "") {
+                            echo "SonarQube Auth Token is not set"
+                        } else {
+                            echo "SonarQube Auth Token is set"
+                        }
+                    }
+                } 
+            } 
+        }
+        stage('Static Code Analysis') { 
+            steps { 
+                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) { 
+                    script {
+                        sh '''
+                            echo "SonarQube URL: ${SONAR_URL}"
+                            cd java-maven-sonar-argocd-helm-k8s/spring-boot-app
+                            mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                        '''
+                    }
+                } 
+            } 
+        }
     }
-     stage('Print Environment Variables') { 
-        steps { withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) { 
-          sh 'echo "SonarQube URL: ${SONAR_URL}"' 
-          sh 'if [ -z "$SONAR_AUTH_TOKEN" ]; then echo "SonarQube Auth Token is not set"; else echo "SonarQube Auth Token is set"; fi' } } }
-    stage('Static Code Analysis') { 
-        steps { withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) { 
-        sh ''' echo "SonarQube URL: ${SONAR_URL}" cd java-maven-sonar-argocd-helm-k8s/spring-boot-app mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL} ''' } } }
-      }
-    }
-
-
+}
