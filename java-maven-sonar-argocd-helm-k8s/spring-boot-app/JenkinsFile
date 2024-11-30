@@ -19,17 +19,16 @@ pipeline {
         sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn clean package'
       }
     }
-     stage('Static Code Analysis') {
-      environment {
-        SONAR_URL = "http://localhost:9000"
-      }
-      steps {
-        withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-          sh 'echo "SonarQube URL: ${SONAR_URL}"' 
-          sh 'echo "SonarQube Auth Token: ${SONAR_AUTH_TOKEN}"'
-          sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
-           
+     stage('Print Environment Variables'){ 
+          steps { 
+            withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) { 
+            sh 'echo "SonarQube URL: ${SONAR_URL}"' 
+            sh 'if [ -z "$SONAR_AUTH_TOKEN" ]; then echo "SonarQube Auth Token is not set"; else echo "SonarQube Auth Token is set"; fi' } }
         }
+     stage('Static Code Analysis'){ 
+          steps { withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+              sh 'cd java-maven-sonar-argocd-helm-k8s/spring-boot-app && mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}' } }
+      }
       }
     }
 }
